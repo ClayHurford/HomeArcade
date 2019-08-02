@@ -17,16 +17,16 @@ SCREEN_TITLE = "Lights Out"
 class LightsOut(arcade.Window):
 
     def __init__(self, width, height, title):
-
-        super().__init__(width, height, title)
-
+        super().__init__(width, height, title, resizable=True)
+        self.click_count = 0
         self.grid = []
         self.win = False
         for row in range(ROW_COUNT):
             self.grid.append([])
             for column in range(COLUMN_COUNT):
-                self.grid[row].append(random.randint(0, 1))
+                self.grid[row].append(0)
 
+        self.randomize_board()
         arcade.set_background_color(arcade.color.WHITE_SMOKE)
 
     def on_draw(self):
@@ -52,22 +52,25 @@ class LightsOut(arcade.Window):
         Called when the user presses a mouse button.
         """
 
+
         # Change the x/y screen coordinates to grid coordinates
         column = x // (WIDTH + MARGIN)
         row = y // (HEIGHT + MARGIN)
 
-        print(f"Click coordinates: ({x}, {y}). Grid coordinates: ({row}, {column})")
+        # print(f"Click coordinates: ({x}, {y}). Grid coordinates: ({row}, {column})")
 
         # Make sure we are on-grid. It is possible to click in the upper right
         # corner in the margin and go to a grid location that doesn't exist
+        lights_on_count = 0
         for rcell in range(ROW_COUNT):
             for ccell in range(COLUMN_COUNT):
                 if self.grid[rcell][ccell] == 1:
-                    self.win = True
-                else:
-                    self.win = False
-                    break
+                    lights_on_count += 1
+        if self.click_count > 50:
+            if lights_on_count == 0:
+                self.win = True
 
+        self.click_count += 1
         if self.win is True:
             print('YOU WON')
             return
@@ -121,6 +124,13 @@ class LightsOut(arcade.Window):
             self.flip_location(row, column)
             self.flip_location(row + 1, column)
             self.flip_location(row, column - 1)
+
+    def randomize_board(self):
+        for i in range(50):
+            row = random.randint(0, 4)
+            column = random.randint(0, 4)
+            self.update_adjacent_squares(row, column)
+            self.click_count += 1
 
 
 if __name__ == "__main__":
